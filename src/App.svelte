@@ -34,21 +34,25 @@
 
 		let parsedString = tempNode.innerHTML
 		parsedString = striptags(parsedString, ALLOWED_TAGS)
+		// parsedString = typograf.execute(parsedString)
+
+		if (str.length > DESCRIPTION_LENGTH) {
+			parsedString += '...'
+		}
+
 		return parsedString
 	}
 
 	function getFeed (url) {
 		return new Promise((resolve, reject) => {
-			fetch(url)
+			fetch(CORS_PROXY + url)
 				.then(response => {
-					if (!response.ok) {
-						const err = new Error(`${url} returned status code ${response.status}`)
-						reject(err)
+					if (response.ok && response.status === 200) {
+						return response.text()
 					}
-					return response
+					const err = new Error(`${url} returned status code ${response.status}`)
+					throw err
 				})
-				.catch(err => reject(err))
-				.then(response => response.text())
 				.then(feedString => {
 					let itemCount = 0
 					const feed = {
@@ -64,7 +68,7 @@
 						if (itemCount === 5) {
 							resolve(feed)
 						} else {
-							feed.items.push(item)
+							feed.items = [item, ...feed.items]
 							itemCount++
 						}
 					})
@@ -91,22 +95,48 @@
 		})
 	}
 	
-	function sortFeedsByDate () {
-		allEntries.sort((a, b) => (a.unixTime < b.unixTime) ? 1 : -1)
+	function sortFeedsByDate (feedArray) {
+		return [...feedArray].sort((a, b) => (a.unixTime < b.unixTime) ? 1 : -1)
 	}
 
 	function unixToHumanDate (unixTime) {
 		const date = new Date(unixTime)
 		const year = date.getFullYear()
-		const month = date.getMonth()
+		const month = date.getMonth() + 1
 		const day = date.getDate()
 		const hours = date.getHours()
 		const minutes = '0' + date.getMinutes()
 		const seconds = '0' + date.getSeconds()
 
- 		const humanTimestamp = day + '.' + month + '.' + year + ' ' + hours + ':' + minutes.substr(-2)
-		return humanTimestamp
+ 		const humanTime = day + '.' + month + '.' + year + ' ' + hours + ':' + minutes.substr(-2)
+		return humanTime
 	}
+
+	function timeAgo (dateParam) {
+    const date = typeof dateParam === 'object' ? dateParam : new Date(dateParam)
+    const today = new Date()
+    const yesterday = new Date(today - 86400000)
+    const seconds = Math.round((today - date) / 1000)
+    const minutes = Math.round(seconds / 60)
+    const isToday = today.toDateString() === date.toDateString()
+    const isYesterday = yesterday.toDateString() === date.toDateString()
+
+    if (seconds < 5) {
+      return 'just now'
+    } else if (seconds < 60) {
+      return `${seconds} seconds ago`
+    } else if (seconds < 90) {
+      return 'a minute ago'
+    } else if (minutes < 60) {
+      return `${minutes} minutes ago`
+    } else if (isToday) {
+      return `${Math.floor(minutes / 60)} hours ago`
+    } else if (isYesterday) {
+      return 'yesterday'
+    }
+
+    return `${Math.floor(minutes / 1440)} days ago`
+  }
 
   async function parseFeeds (feedList) {
 		console.log('Loading your subscriptions...')
@@ -115,8 +145,9 @@
 			getFeed(CORS_PROXY + feedURL)
 				.then(feed => {
 					const currentFeedEntries = parseSingleFeed(feed)
-					allEntries = [...allEntries, ...currentFeedEntries]
-					sortFeedsByDate()
+					allEntries = sortFeedsByDate(
+						[...allEntries, ...currentFeedEntries]
+					)
 				})
 				.catch(err => console.error(err))
 		})
@@ -155,13 +186,17 @@
 					}
 				})
 			}
+
+			if (item.description) {
+				entry.excerpt = parseFeedDescription(item.description, feed.link)
+			}
 			
 			if (item.content) {
 				entry.excerpt = parseFeedDescription(item.content, feed.link)
 			}
 
-			if (item.description) {
-				entry.excerpt = parseFeedDescription(item.description, feed.link)
+			if (item['content:encoded']) {
+				entry.excerpt = parseFeedDescription(item['content:encoded'], feed.link)
 			}
 
 			if (item.content_html) {
@@ -169,7 +204,7 @@
 			}
 
 			entry.unixTime = new Date(entry.pubDate).valueOf()
-			entry.humanTimestamp = new Date(entry.pubDate)
+			entry.humanTime = new Date(entry.pubDate)
 
 			entries.push(entry)
 		})
@@ -245,6 +280,10 @@
 		margin: 1em 0;
 	}
 
+	.entry-content :global(strong) {
+		font-weight: 400;
+	}
+
 	date {
 		display: block;
 		font-size: 12px;
@@ -276,10 +315,10 @@
 				{/if}
 			</header>
 			<div class="entry-content">
-				{@html entry.excerpt}...
+				{@html entry.excerpt}
 			</div>
 			<date>
-				<a class="pink" href="{entry.link}">→ {unixToHumanDate(entry.pubDate)}</a>
+				<a class="pink" href="{entry.link}">→ {timeAgo(entry.pubDate)} ({unixToHumanDate(entry.pubDate)})</a>
 			</date>
 		</article>
 	{:else}
