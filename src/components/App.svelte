@@ -1,7 +1,9 @@
 <script>
 	import FeedMe from 'feedme'
 	import striptags from 'striptags'
-	import subscriptions from '../subscriptions.json'
+	import subscriptions from '../../subscriptions.json'
+
+	import favicon from '../favicon.svg'
 
   // Some RSS feeds can't be loaded in the browser due to CORS security.
   // To get around this, we use a proxy
@@ -138,7 +140,7 @@
     return `${Math.floor(minutes / 1440)} days ago`
   }
 
-  async function parseFeeds (feedList) {
+  function parseFeeds (feedList) {
 		console.log('Loading your subscriptions...')
 		console.log(feedList)
     feedList.forEach((feedURL) => {
@@ -299,7 +301,7 @@
 <main>
   <h1 class="solar-mars-title">
 		<a href="/">
-			<img alt="Solar Mars logo: a pink telescope" src="/favicon.svg">
+			<img alt="Solar Mars logo: a pink telescope" src={favicon}>
 			Solar Mars
 		</a>
 	</h1>

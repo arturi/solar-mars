@@ -3,27 +3,26 @@
   "version": "1.0.0",
   "scripts": {
     "build": "rollup -c",
-    "dev": "rollup -c -w",
+    "dev": "parcel src/index.html",
     "start": "sirv public"
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^11.0.0",
     "@rollup/plugin-json": "^4.0.2",
     "@rollup/plugin-node-resolve": "^7.0.0",
+    "parcel-bundler": "^1.12.4",
+    "parcel-plugin-svelte": "^4.0.6",
     "rollup": "^1.20.0",
     "rollup-plugin-livereload": "^1.0.0",
     "rollup-plugin-node-builtins": "^2.1.2",
     "rollup-plugin-node-globals": "^1.4.0",
     "rollup-plugin-svelte": "^5.0.3",
     "rollup-plugin-terser": "^5.1.2",
-    "svelte": "^3.0.0"
+    "svelte": "^3.20.1",
+    "sirv-cli": "^0.4.4"
   },
   "dependencies": {
-    "axios": "^0.19.2",
     "feedme": "^1.2.0",
-    "feedr": "^4.8.0",
-    "rss-parser": "^3.7.5",
-    "sirv-cli": "^0.4.4",
     "striptags": "^3.1.1"
   }
 }
