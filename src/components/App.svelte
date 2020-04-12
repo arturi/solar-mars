@@ -8,35 +8,36 @@
   // Some RSS feeds can't be loaded in the browser due to CORS security.
   // To get around this, we use a proxy
 	const CORS_PROXY = 'https://cors-anywhere.herokuapp.com/'
-	const DESCRIPTION_LENGTH = 500
-	const ALLOWED_TAGS = ['a', 'img', 'strong', 'picture', 'figure', 'figcaption']
+	const DESCRIPTION_LENGTH = 800
+	const ALLOWED_TAGS = ['p', 'a', 'img', 'strong', 'picture', 'figure', 'figcaption']
 
 	let allEntries = []
 
-	const parseFeedDescription = (str, baseUrl) => {
+	function parseFeedDescription (str, baseUrl) {
 		const excerpt = str.substring(0, DESCRIPTION_LENGTH)
-		const tempNode = document.createElement('div')
-		tempNode.innerHTML = excerpt
 
-		const allElements = Array.from(tempNode.querySelectorAll('*'))
-		allElements.forEach(el => {
-			el.removeAttribute('style')
-			el.removeAttribute('class')
-		})
+		let descriptionDom = new DOMParser().parseFromString(excerpt, 'text/html')
 
-		const imageElements = Array.from(tempNode.querySelectorAll('img'))
-		imageElements.forEach(el => {
+		// Remove style and class attributes
+		const allElements = descriptionDom.querySelectorAll('*')
+		for (let element of allElements) {
+			element.removeAttribute('style')
+			element.removeAttribute('class')
+		}
+
+		// Replace relative image paths with absolute
+		const imageElements = descriptionDom.querySelectorAll('img')
+		for (let element of imageElements) {
 			const isRelativeUrl = new RegExp('^(?:[a-z]+:)?//', 'i')
-			const imageSrc = el.getAttribute('src')
+			const imageSrc = element.getAttribute('src')
 			if (!isRelativeUrl.test(imageSrc)) {
 				const absoluteUrl = new URL(imageSrc, baseUrl)
-				el.src = absoluteUrl.href
+				element.src = absoluteUrl.href
 			}
-		})
+		}
 
-		let parsedString = tempNode.innerHTML
+		let parsedString = descriptionDom.body.innerHTML || ''
 		parsedString = striptags(parsedString, ALLOWED_TAGS)
-		// parsedString = typograf.execute(parsedString)
 
 		if (str.length > DESCRIPTION_LENGTH) {
 			parsedString += '...'
@@ -60,7 +61,7 @@
 					const feed = {
 						items: []
 					}
-					const parser = new FeedMe()
+					const parser = new FeedMe(true)
 					parser.on('error', (err) => reject(err))
 					parser.on('title', (title) => {
 						feed.title = title
@@ -93,22 +94,27 @@
 					parser.once('updated', onUpdatedDate)
 
 					parser.write(feedString)
+					// console.log(parser.done())
 			})
 		})
 	}
 	
 	function sortFeedsByDate (feedArray) {
-		return [...feedArray].sort((a, b) => (a.unixTime < b.unixTime) ? 1 : -1)
+		return [...feedArray].sort((a, b) => (b.unixTime - a.unixTime))
 	}
 
 	function unixToHumanDate (unixTime) {
 		const date = new Date(unixTime)
 		const year = date.getFullYear()
-		const month = date.getMonth() + 1
+		let month = date.getMonth() + 1
 		const day = date.getDate()
 		const hours = date.getHours()
 		const minutes = '0' + date.getMinutes()
 		const seconds = '0' + date.getSeconds()
+
+		if (month.toString().length === 1) {
+			month = '0' + month.toString()
+		}
 
  		const humanTime = day + '.' + month + '.' + year + ' ' + hours + ':' + minutes.substr(-2)
 		return humanTime
@@ -147,9 +153,8 @@
 			getFeed(CORS_PROXY + feedURL)
 				.then(feed => {
 					const currentFeedEntries = parseSingleFeed(feed)
-					allEntries = sortFeedsByDate(
-						[...allEntries, ...currentFeedEntries]
-					)
+					allEntries = [...allEntries, ...currentFeedEntries]
+					allEntries = sortFeedsByDate(allEntries)
 				})
 				.catch(err => console.error(err))
 		})
@@ -205,8 +210,7 @@
 				entry.excerpt = parseFeedDescription(item.content_html, feed.link)
 			}
 
-			entry.unixTime = new Date(entry.pubDate).valueOf()
-			entry.humanTime = new Date(entry.pubDate)
+			entry.unixTime = new Date(entry.pubDate).getTime()
 
 			entries.push(entry)
 		})
@@ -272,6 +276,10 @@
 	.entry-content {
 		font-size: 18px;
 		margin-bottom: 15px;
+	}
+
+	.entry-content :global(p) {
+		margin-bottom: 1em;
 	}
 
 	.entry-content :global(a) {
