@@ -1,28 +1,24 @@
 {
-  "name": "svelte-app",
-  "version": "1.0.0",
+  "name": "solar-mars",
+  "version": "0.3.0",
+  "repository": "https://github.com/arturi/solar-mars",
+  "license": "MIT",
+  "browserslist": [
+    "defaults"
+  ],
   "scripts": {
-    "build": "rollup -c",
+    "build": "parcel build src/main.js",
     "dev": "parcel src/index.html",
-    "start": "sirv public"
+    "start": "npm run dev"
   },
   "devDependencies": {
-    "@rollup/plugin-commonjs": "^11.0.0",
-    "@rollup/plugin-json": "^4.0.2",
-    "@rollup/plugin-node-resolve": "^7.0.0",
-    "parcel-bundler": "^1.12.4",
-    "parcel-plugin-svelte": "^4.0.6",
-    "rollup": "^1.20.0",
-    "rollup-plugin-livereload": "^1.0.0",
-    "rollup-plugin-node-builtins": "^2.1.2",
-    "rollup-plugin-node-globals": "^1.4.0",
-    "rollup-plugin-svelte": "^5.0.3",
-    "rollup-plugin-terser": "^5.1.2",
-    "svelte": "^3.20.1",
-    "sirv-cli": "^0.4.4"
+    "parcel-bundler": "1.12.4",
+    "parcel-plugin-bundle-visualiser": "1.2.0",
+    "parcel-plugin-svelte": "4.0.6",
+    "svelte": "3.20.1"
   },
   "dependencies": {
-    "feedme": "^1.2.0",
-    "striptags": "^3.1.1"
+    "feedme": "1.2.0",
+    "striptags": "3.1.1"
   }
 }
