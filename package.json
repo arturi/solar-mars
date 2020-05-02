@@ -4,7 +4,10 @@
   "repository": "https://github.com/arturi/solar-mars",
   "license": "MIT",
   "browserslist": [
-    "defaults"
+    "defaults",
+    "not IE 11",
+    "not IE_Mob 11",
+    "maintained node versions"
   ],
   "scripts": {
     "build": "parcel build src/index.html --public-url './'",
@@ -20,5 +23,11 @@
   "dependencies": {
     "feedme": "1.2.0",
     "striptags": "3.1.1"
+  },
+  "prettier": {
+    "trailingComma": "es5",
+    "tabWidth": 2,
+    "semi": false,
+    "singleQuote": true
   }
 }
