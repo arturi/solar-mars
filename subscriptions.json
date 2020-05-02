@@ -3,11 +3,12 @@
     "https://rssbox.herokuapp.com/instagram/104680/arturi",
     "https://lol-doesnt-exist.rss",
 		"https://marco.org/rss",
-		"https://arturpaikin.com/ru/blog-feed.xml",
+    "https://arturpaikin.com/ru/blog-feed.xml",
+    "https://arturpaikin.com/en/blog-feed.xml",
 		"http://sergeykorol.ru/blog/feed",
 		"https://www.manton.org/feed.json",
 		"https://merveilles.town/@neauoire.rss",
-		"https://ilyabirman.ru/meanwhile/rss/",
+		"https://ilyabirman.ru/meanwhile/rss",
 		"https://aaronparecki.com/feed.json",
     "https://a-krotov.livejournal.com/data/atom",
     "https://grumpygamer.com/rss2.0",
@@ -18,6 +19,7 @@
     "https://www.spreaker.com/show/2683877/episodes/feed",
     "https://andregarzia.com/feeds/all.rss.xml",
     "https://toot.cafe/@soapdog.rss",
-    "https://eli.li/feed.rss"
+    "https://eli.li/feed.rss",
+    "https://mattisms.blog/feed.xml"
   ]
 }
