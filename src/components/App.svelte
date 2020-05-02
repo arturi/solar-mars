@@ -9,12 +9,13 @@
   // To get around this, we use a proxy
 	const CORS_PROXY = 'https://cors-anywhere.herokuapp.com/'
 	const DESCRIPTION_LENGTH = 800
-	const ALLOWED_TAGS = ['p', 'a', 'img', 'strong', 'picture', 'figure', 'figcaption']
+	const ALLOWED_TAGS = ['p', 'a', 'img', 'strong', 'picture', 'figure', 'figcaption', 'iframe']
 
 	let allEntries = []
 
 	function parseFeedDescription (str, baseUrl) {
-		const excerpt = str.substring(0, DESCRIPTION_LENGTH)
+		let excerpt = str.substring(0, DESCRIPTION_LENGTH)
+		excerpt = striptags(excerpt, ALLOWED_TAGS)
 
 		let descriptionDom = new DOMParser().parseFromString(excerpt, 'text/html')
 
@@ -23,6 +24,14 @@
 		for (let element of allElements) {
 			element.removeAttribute('style')
 			element.removeAttribute('class')
+
+			// Add iframe wrapper to make them full width with proper aspect ratio
+			if (element.tagName === 'IFRAME') {
+				const wrapper = descriptionDom.createElement('div')
+				wrapper.classList.add('fixed-aspect-wrapper')
+				element.parentNode.insertBefore(wrapper, element)
+				wrapper.appendChild(element)
+			}
 		}
 
 		// Replace relative image paths with absolute
@@ -37,9 +46,8 @@
 		}
 
 		let parsedString = descriptionDom.body.innerHTML || ''
-		parsedString = striptags(parsedString, ALLOWED_TAGS)
 
-		if (str.length > DESCRIPTION_LENGTH) {
+		if (parsedString.length > DESCRIPTION_LENGTH) {
 			parsedString += '...'
 		}
 
@@ -151,6 +159,10 @@
 		console.log(feedList)
     feedList.forEach((feedURL) => {
 			getFeed(CORS_PROXY + feedURL)
+				.catch(err => {
+					console.log('Error fetching feed:')
+					console.error(err)
+				})
 				.then(feed => {
 					const currentFeedEntries = parseSingleFeed(feed)
 					allEntries = [...allEntries, ...currentFeedEntries]
@@ -223,8 +235,10 @@
 
 <style>
   main {
-    font-family: 'Avenir Next', Avenir, '-apple-system', Helvetica, Arial, sans-serif;
-		max-width: 600px;
+    font-family: 'Avenir Next', Avenir, '-apple-system',
+			Helvetica, Arial, sans-serif;
+		max-width: 650px;
+		padding: 0 15px;
 		margin: auto;
   }
 
@@ -246,7 +260,7 @@
 	}
 
 	article {
-		margin-bottom: 70px;
+		margin-bottom: 75px;
 	}
 
 	article header {
@@ -275,6 +289,7 @@
 
 	.entry-content {
 		font-size: 18px;
+		line-height: 1.55;
 		margin-bottom: 15px;
 	}
 
@@ -292,6 +307,21 @@
 
 	.entry-content :global(strong) {
 		font-weight: 400;
+	}
+
+	/* https://jameshfisher.com/2017/08/30/how-do-i-make-a-full-width-iframe/ */
+	:global(.fixed-aspect-wrapper) {
+		margin: 1em 0;
+		position: relative;
+		padding-top: 56.25%;
+	}
+
+	:global(.fixed-aspect-wrapper iframe) {
+		position:absolute;
+		top:0;
+		left:0;
+		width:100%;
+		height:100%;
 	}
 
 	date {
