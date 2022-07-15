@@ -18,7 +18,7 @@
     "parcel-bundler": "1.12.4",
     "parcel-plugin-bundle-visualiser": "1.2.0",
     "parcel-plugin-svelte": "4.0.6",
-    "svelte": "3.21.0"
+    "svelte": "3.49.0"
   },
   "dependencies": {
     "feedme": "1.2.0",
